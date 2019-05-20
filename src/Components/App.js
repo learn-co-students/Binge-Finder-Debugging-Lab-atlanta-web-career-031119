@@ -4,8 +4,9 @@ import TVShowList from './TVShowList';
 import Nav from './Nav';
 import SelectedShowContainer from './SelectedShowContainer';
 import { Grid } from 'semantic-ui-react';
+import BottomScrollListener from 'react-bottom-scroll-listener'
 
-
+let pageNum = 0
 
 class App extends Component {
   constructor(){
@@ -19,7 +20,7 @@ class App extends Component {
   }}
 
   componentDidMount = () => {
-    Adapter.getShows().then(shows => this.setState({shows}))
+    Adapter.getShows(pageNum).then(shows => this.setState({shows}))
   }
 
   componentDidUpdate = () => {
@@ -28,6 +29,11 @@ class App extends Component {
 
   handleSearch = (e) => {
     this.setState({ searchTerm: e.target.value.toLowerCase() })
+  }
+
+  handleBottom = () =>{
+    pageNum += 1
+    Adapter.getShows(pageNum).then(shows => this.setState({shows}))
   }
 
   handleFilter = (e) => {
@@ -65,6 +71,7 @@ class App extends Component {
             <TVShowList shows={this.displayShows()} selectShow={this.selectShow} searchTerm={this.state.searchTerm}/>
           </Grid.Column>
         </Grid>
+      <BottomScrollListener onBottom={this.handleBottom} />
       </div>
     );
   }
