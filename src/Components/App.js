@@ -4,40 +4,49 @@ import TVShowList from './TVShowList';
 import Nav from './Nav';
 import SelectedShowContainer from './SelectedShowContainer';
 import { Grid } from 'semantic-ui-react';
+import BottomScrollListener from 'react-bottom-scroll-listener'
 
-
+let pageNum = 0
 
 class App extends Component {
-  state = {
+  constructor(){
+  super()
+  this.state = {
     shows: [],
     searchTerm: "",
     selectedShow: "",
     episodes: [],
     filterByRating: "",
-  }
+  }}
 
   componentDidMount = () => {
-    Adapter.getShows().then(shows => this.setState({shows}))
+    Adapter.getShows(pageNum).then(shows => this.setState({shows}))
   }
 
   componentDidUpdate = () => {
     window.scrollTo(0, 0)
   }
 
-  handleSearch (e){
+  handleSearch = (e) => {
     this.setState({ searchTerm: e.target.value.toLowerCase() })
   }
 
+  handleBottom = () =>{
+    pageNum += 1
+    Adapter.getShows(pageNum).then(shows => this.setState({shows}))
+  }
+
   handleFilter = (e) => {
-    e.target.value === "No Filter" ? this.setState({ filterRating:"" }) : this.setState({ filterRating: e.target.value})
+    e.target.value === "No Filter" ? this.setState({ filterByRating:"" }) : this.setState({ filterByRating: e.target.value})
   }
 
   selectShow = (show) => {
     Adapter.getShowEpisodes(show.id)
-    .then((episodes) => this.setState({
+    .then(episodes => this.setState({
       selectedShow: show,
-      episodes
-    }))
+      episodes: episodes
+    })
+    )
   }
 
   displayShows = () => {
@@ -56,12 +65,13 @@ class App extends Component {
         <Nav handleFilter={this.handleFilter} handleSearch={this.handleSearch} searchTerm={this.state.searchTerm}/>
         <Grid celled>
           <Grid.Column width={5}>
-            {!!this.state.selectedShow ? <SelectedShowContainer selectedShow={this.state.selectedShow} allEpisodes={this.state.episodes}/> : <div/>}
+            {this.state.selectedShow ? <SelectedShowContainer selectedShow={this.state.selectedShow} allEpisodes={this.state.episodes}/> : <div/>}
           </Grid.Column>
           <Grid.Column width={11}>
             <TVShowList shows={this.displayShows()} selectShow={this.selectShow} searchTerm={this.state.searchTerm}/>
           </Grid.Column>
         </Grid>
+      <BottomScrollListener onBottom={this.handleBottom} />
       </div>
     );
   }
